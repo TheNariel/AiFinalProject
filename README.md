@@ -1,4 +1,5 @@
 AiFinalProject
+
 https://curiouscoder.space/blog/machine%20learning/teaching-a-computer-blackjack-using-reinforcement-learning/
 
 https://www.bicyclecards.com/how-to-play/blackjack/
