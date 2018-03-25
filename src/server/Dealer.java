@@ -4,34 +4,48 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import Gamer.BasicGamer;
 import Gamer.Gamer;
+import Gamer.RandomGamer;
 
 public class Dealer {
-	List<String> deckOriginal;
+	int nDecks;
 	List<String> deck;
 	List<Gamer> players;
 	List<List<String>> table;
 	List<String> nextActions = new ArrayList<>();
-	int[] gameResults;
-	boolean allStand;
+	// [payoff,win,lose,bust,tie]
+	List<int[]> gameResults;
 
-	public Dealer(List<String> deck, List<Gamer> players) {
-		this.deckOriginal = deck;
-		this.deck = deck;
+	public Dealer(int nDecks, List<Gamer> players) {
+		this.nDecks = nDecks;
+		this.deck = makeDeck(nDecks);
 		this.players = players;
 
+		init();
+	}
+
+	private void init() {
 		cleenUp();
-		gameResults = new int[players.size()];
-		for (int i = 0; i < gameResults.length; i++) {
-			gameResults[i] = 0;
+		gameResults = new ArrayList<>();
+		for (int i = 0; i < players.size(); i++) {
+			int[] tempRes = new int[5];
+			tempRes[0] = 0;
+			tempRes[1] = 0;
+			tempRes[2] = 0;
+			tempRes[3] = 0;
+			tempRes[4] = 0;
+			gameResults.add(tempRes);
 		}
 		Collections.shuffle(deck);
+
 	}
 
 	public void doGame(int nHands) {
+		init();
 		for (int i = 0; i < nHands; i++) {
-			if (deck.size() < 3 * (2 + 2 * players.size())) {
-				deck = new ArrayList<>(deckOriginal);
+			if (deck.size() < (3 * (2 + 2 * players.size()))) {
+				deck = makeDeck(nDecks);
 				Collections.shuffle(deck);
 			}
 			String dealerCard;
@@ -60,6 +74,22 @@ public class Dealer {
 			results(table);
 			cleenUp();
 		}
+		printOutResults();
+	}
+
+	private void printOutResults() {
+		for (int[] r : gameResults) {	
+
+			System.out.print("[");
+
+			for (int i = 0; i < r.length - 1; i++) {
+				System.out.print(r[i] + " ");
+			}
+			System.out.print(r[r.length - 1]);
+
+			//System.out.println(r[0]);
+			System.out.println("]");
+		}
 	}
 
 	private void cleenUp() {
@@ -70,15 +100,43 @@ public class Dealer {
 	}
 
 	private void results(List<List<String>> table) {
-		System.out.println(table);
+		// System.out.println(table);
 		List<Integer> results = new ArrayList<>();
 		for (int i = 0; i < table.size(); i++) {
 			results.add(sumHand(table.get(i)));
 		}
-		for (int i = 0; i < table.size(); i++) {
-			results.add(sumHand(table.get(i)));
+
+		// [payoff,win,lose,bust,tie]
+		int dealerScore = results.get(0);
+		int playerScore;
+		for (int i = 0; i < results.size() - 1; i++) {
+			playerScore = results.get(i + 1);
+
+			if (playerScore > 21) {
+				gameResults.get(i)[0] -= 10;
+				gameResults.get(i)[3] += 1;
+			} else {
+				if (dealerScore > 21) {
+					gameResults.get(i)[0] += 10;
+					gameResults.get(i)[1] += 1;
+				} else {
+					if (playerScore == dealerScore) {
+						gameResults.get(i)[4] += 1;
+					}
+					if (playerScore > dealerScore) {
+						gameResults.get(i)[0] += 10;
+						gameResults.get(i)[1] += 1;
+					}
+					if (playerScore < dealerScore) {
+						gameResults.get(i)[0] -= 10;
+						gameResults.get(i)[2] += 1;
+					}
+
+				}
+
+			}
+
 		}
-		// System.out.println(results);
 	}
 
 	private int sumHand(List<String> hand) {
@@ -137,6 +195,29 @@ public class Dealer {
 			return 0;
 		}
 
+	}
+
+	public static List<String> makeDeck(int nDecks) {
+		List<String> deck = new ArrayList<String>();
+
+		for (int i = 0; i < nDecks; i++) {
+			for (int a = 0; a < 4; a++) {
+				deck.add("2");
+				deck.add("3");
+				deck.add("4");
+				deck.add("5");
+				deck.add("6");
+				deck.add("7");
+				deck.add("8");
+				deck.add("9");
+				deck.add("10");
+				deck.add("J");
+				deck.add("Q");
+				deck.add("K");
+				deck.add("A");
+			}
+		}
+		return deck;
 	}
 
 }
