@@ -5,15 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class BasicGamer extends Gamer{
-	int nDecks, id;
+public class BasicGamer extends Gamer {
+	public int nDecks, id;
 
 	public BasicGamer(int nDecks, int id) {
 		this.nDecks = nDecks;
 		this.id = id;
 	}
 
-	public String getNextAction(List<List<String>> table) {
+	public String getNextAction(List<List<Integer>> table) {
 		int sum = sumHand(table.get(id));
 		if (sum < 17)
 			return "Hit";
@@ -21,19 +21,15 @@ public class BasicGamer extends Gamer{
 		return "Stand";
 	}
 
-	public void handOver(List<List<String>> table) {
+	public void handOver(int payout,List<List<Integer>> table) {
 		// ToDo some kind of statistics maybe.
 	}
 
-	private int sumHand(List<String> hand) {
+	private int sumHand(List<Integer> hand) {
 		int sum = 0;
 
-		List<Integer> values = new ArrayList<>();
-		for (int i = 0; i < hand.size(); i++) {
-			values.add(getValue(hand.get(i)));
-		}
-		Collections.sort(values);
-		for (Integer value : values) {
+		Collections.sort(hand);
+		for (Integer value : hand) {
 			if (value == 11) {
 				if (sum + value > 21) {
 					sum += 1;
@@ -48,38 +44,4 @@ public class BasicGamer extends Gamer{
 		return sum;
 	}
 
-	public int getValue(String card) {
-
-		switch (card) {
-		case "2":
-			return 2;
-		case "3":
-			return 3;
-		case "4":
-			return 4;
-		case "5":
-			return 5;
-		case "6":
-			return 6;
-		case "7":
-			return 7;
-		case "8":
-			return 8;
-		case "9":
-			return 9;
-		case "10":
-			return 10;
-		case "J":
-			return 10;
-		case "Q":
-			return 10;
-		case "K":
-			return 10;
-		case "A":
-			return 11;
-		default:
-			return 0;
-		}
-
-	}
 }
