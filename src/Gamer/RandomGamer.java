@@ -23,9 +23,6 @@ public class RandomGamer extends Gamer {
 		return "Stand";
 	}
 
-	public void handOver(int payout) {
-		// ToDo some kind of statistics maybe.
-	}
 
 	private int sumHand(List<Integer> hand) {
 		int sum = 0;

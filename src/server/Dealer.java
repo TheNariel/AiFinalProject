@@ -13,29 +13,28 @@ public class Dealer {
 	List<List<Integer>> table;
 	List<String> nextActions = new ArrayList<>();
 	// [payoff,win,lose,bust,tie]
-	List<int[]> gameResults;
+	List<double[]> gameResults;
 	List<Integer> dealerCard = new ArrayList<>();
 
 	public Dealer(int nDecks, List<Gamer> players) {
 		this.nDecks = nDecks;
 		this.deck = makeDeck(nDecks);
 		this.players = players;
-		for (Gamer gamer : players) {
-			gamer.newDeck();
-		}
+		
 		init();
 	}
 
 	private void init() {
 		cleenUp();
 		gameResults = new ArrayList<>();
+		//making the game results structure.
 		for (int i = 0; i < players.size(); i++) {
-			int[] tempRes = new int[5];
-			tempRes[0] = 0;
-			tempRes[1] = 0;
-			tempRes[2] = 0;
-			tempRes[3] = 0;
-			tempRes[4] = 0;
+			double[] tempRes = new double[5];
+			tempRes[0] = 0.0;
+			tempRes[1] = 0.0;
+			tempRes[2] = 0.0;
+			tempRes[3] = 0.0;
+			tempRes[4] = 0.0;
 			gameResults.add(tempRes);
 		}
 		Collections.shuffle(deck);
@@ -45,16 +44,18 @@ public class Dealer {
 	public void doGame(int nHands) {
 		init();
 		for (int i = 0; i < nHands; i++) {
-			if (deck.size() < (3 * (2 + 2 * players.size()))) {
+			//deck reshuffiling in case the deck is running out of cards, we don't want to reshufle during "hand"
+			if (deck.size() < 20) {
 				deck = makeDeck(nDecks);
-				for (Gamer gamer : players) {
-					gamer.newDeck();
-				}
 				Collections.shuffle(deck);
 
 			}
+			
 			dealerCard = new ArrayList<>();
 
+			//initial card dealing 
+			//1 to each player (face up) one to dealer (face up)
+			//1 to each player (face up) one to dealer (face down)
 			for (int p = 1; p < table.size(); p++) {
 				table.get(p).add(deck.remove(0));
 			}
@@ -64,24 +65,28 @@ public class Dealer {
 			for (int p = 1; p < table.size(); p++) {
 				table.get(p).add(deck.remove(0));
 			}
+			
 			dealerCard.add(deck.remove(0));
 
+			
+			//players play-out, as long as players wants card (returns Hit) 
+			//give him a card and send results to learn.
 			for (int p = 0; p < players.size(); p++) {
 				while (players.get(p).getNextAction(table).equals("Hit")) {
 					table.get(p + 1).add(deck.remove(0));
 					players.get(p).learn(table, 0, 0);
 				}
 			}
-
+			
+			//Dealers play-out
 			dealerCard.addAll(table.get(0));
 			while (sumHand(dealerCard) < 17) {
 				dealerCard.add(deck.remove(0));
 			}
-			
+			//checking results and sending them to players.
 			results(table);
-			for (Gamer gamer : players) {
-				gamer.handOver(table);
-			}
+			
+			//cleaning up the table. 
 			cleenUp();
 			
 		}
@@ -105,8 +110,9 @@ public class Dealer {
 			System.out.println("]");
 
 		}*/
-
 		System.out.println(gameResults.get(0)[0]);
+		
+		//System.out.println(gameResults.get(0)[1]/(gameResults.get(0)[2]+gameResults.get(0)[3]));
 	}
 
 	private void cleenUp() {
@@ -117,7 +123,8 @@ public class Dealer {
 	}
 
 	private void results(List<List<Integer>> table) {
-		// System.out.println(table);
+		// checking and reporting results 
+		
 		List<Integer> results = new ArrayList<>();
 		for (int i = 0; i < table.size(); i++) {
 			results.add(sumHand(table.get(i)));
@@ -204,14 +211,3 @@ public class Dealer {
 	}
 
 }
-
-/*
- * public int getValue(String card) {
- * 
- * switch (card) { case "2": return 2; case "3": return 3; case "4": return 4;
- * case "5": return 5; case "6": return 6; case "7": return 7; case "8": return
- * 8; case "9": return 9; case "10": return 10; case "J": return 10; case "Q":
- * return 10; case "K": return 10; case "A": return 11; default: return 0; }
- * 
- * }
- */

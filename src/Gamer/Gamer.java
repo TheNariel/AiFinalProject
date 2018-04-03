@@ -14,12 +14,6 @@ public class Gamer {
 	return "Stand";
 	}
 
-	public void handOver(List<List<Integer>> table) {
-		// ToDo some kind of statistics maybe.
-	}
-	public void newDeck() {
-		
-	}
 	public void printQTable() {
 	}
 	public void learn(List<List<Integer>> table, int reward,int action) {

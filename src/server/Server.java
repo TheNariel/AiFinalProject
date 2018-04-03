@@ -1,13 +1,10 @@
 package server;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import Gamer.BasicGamer;
 import Gamer.Gamer;
-import Gamer.QGamer;
-import Gamer.QGamer2;
+import Gamer.QGamerFinal;
 
 public class Server {
 	private final static int NUMBER_OF_DECKS = 1;
@@ -28,11 +25,9 @@ public class Server {
 	private static List<Gamer> initPlayers(int nPlayers, int nDecks) {
 		List<Gamer> players = new ArrayList<Gamer>();
 		for (int j = 1; j <= nPlayers; j++) {
-			players.add(new QGamer2(nDecks,j));
+			players.add(new QGamerFinal(nDecks, j));
 		}
 		return players;
 	}
-
-	
 
 }

@@ -9,88 +9,92 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-public class QGamer2 extends Gamer {
-	public int nDecks, id;
-	double toTrain = 1000, toTrainMax = 1000;
-	List<Integer> deck;
+public class QGamerFinal extends Gamer {
 	Map<String, List<Double>> qTable = new HashMap<String, List<Double>>();
 	final List<String> actions = new ArrayList<String>(Arrays.asList("Hit", "Stand"));
+	public int nDecks, id;
 	String oldTable;
+	
+	double toTrain, toTrainMax = 500000;
+	double alpha = 0.5, gamma = 0.99, epsilon = 1;
 
-	double alpha = 0.6, gamma = 0.75, epsilon = 1;
-
-	public QGamer2(int nDecks, int id) {
+	public QGamerFinal(int nDecks, int id) {
+		toTrain = toTrainMax;
 		this.nDecks = nDecks;
 		this.id = id;
 	}
 
-	public void newDeck() {
-		this.deck = makeDeck(nDecks);
-	}
-
 	public String getNextAction(List<List<Integer>> table) {
 		Random rng = new Random();
+		// initiate the state.
 		String state = makeState(table);
 		oldTable = state;
+		// add to Q table if its not there (default value is 0)
 		addToTableIfNew(state);
+		// Necessary for the rules.
+		if (sumHand(table.get(id)) > 21)
+			return "Stand";
 
-		if (toTrain < 0) {
-			if (sumHand(table.get(id)) > 21)
-				return "Stand";
+		// selection part.
+		if (rng.nextDouble() > epsilon) {
+			return actions.get(getMaxQAction(state));
 
+		} else {
 			if (rng.nextDouble() > epsilon) {
-				return actions.get(getMaxQAction(state));
+				// Guidance
+				int sum = sumHand(table.get(id));
+				if (sum < 17)
+					return "Hit";
 
+				return "Stand";
 			} else {
 				if (rng.nextBoolean())
 					return "Hit";
 				return "Stand";
+
 			}
-		} else {
-
-			int sum = sumHand(table.get(id));
-			if (sum < 17)
-				return "Hit";
-
-			return "Stand";
 		}
+
 	}
 
 	public void printQTable() {
+//printing out Q table sorted based on cards in agents hand.
+		List<String> list = new ArrayList<>();
+		Set<String> keys = qTable.keySet();
+		for (String string : keys) {
+			list.add(string);
+		}
+		Collections.sort(list);
+		for (String string : list) {
+			System.out.println(string + " = " + qTable.get(string));
 
-		/*
-		 * List<String> list = new ArrayList<>(); Set<String> keys = qTable.keySet();
-		 * for (String string : keys) { list.add(string); } Collections.sort(list); for
-		 * (String string : list) { System.out.println(string + " = " +
-		 * qTable.get(string));
-		 * 
-		 * }
-		 */
+		}
 
 		// System.out.println(qTable.size());
-		System.out.println(qTable);
-	}
-
-	public void handOver(List<List<Integer>> table) {
-
+		// System.out.println(qTable);
 	}
 
 	public void learn(List<List<Integer>> table, int reward, int action) {
-		List<Double> temp = qTable.get(oldTable);
-		double Q = temp.get(action);
-
-		double maxNextQ = getMaxQ(makeState(table));
-		double update = Q + alpha * (reward + gamma * maxNextQ - Q);
-		temp.set(action, update);
-
-		epsilon = (toTrain / toTrainMax * 2);
-		if (reward != 0)
-			toTrain--;
 		if (toTrain < 0) {
 			epsilon = 0;
 			alpha = 0;
+		} else {
+			List<Double> temp = qTable.get(oldTable);
+
+			// standard learning
+			double Q = temp.get(action);
+			double maxNextQ = getMaxQ(makeState(table));
+			double update = Q + alpha * (reward + (gamma * maxNextQ) - Q);
+			temp.set(action, update);
+
+			// epsilon decay
+			epsilon = (toTrain / toTrainMax);
+
+			// System.out.println(epsilon);
+			if (reward != 0)
+				toTrain--;
 		}
-		// System.out.println(epsilon);
+
 	}
 
 	private void addToTableIfNew(String state) {
@@ -137,49 +141,12 @@ public class QGamer2 extends Gamer {
 			}
 		}
 
-		// Collections.sort(rest);
-		// Collections.sort(myHand);
-		// Collections.sort(deck);
-		// state.add(rest);
-		// state.add(myHand);
-		// state.add(deck);
-
-		List<Integer> ace = new ArrayList<Integer>();
-		List<Integer> myHandtemp = new ArrayList<Integer>();
-		myHandtemp.add(sumHand(myHand));
-		state.add(myHandtemp);
+		Collections.sort(rest);
+		Collections.sort(myHand);
+		state.add(myHand);
 		state.add(rest);
 
-		if (myHand.contains(11)) {
-			ace.add(1);
-		} else {
-			ace.add(0);
-		}
-		state.add(ace);
 		return state.toString();
-	}
-
-	private List<Integer> makeDeck(int nDecks) {
-		List<Integer> deck = new ArrayList<Integer>();
-
-		for (int i = 0; i < nDecks; i++) {
-			for (int a = 0; a < 4; a++) {
-				deck.add(2);
-				deck.add(3);
-				deck.add(4);
-				deck.add(5);
-				deck.add(6);
-				deck.add(7);
-				deck.add(8);
-				deck.add(9);
-				deck.add(10);
-				deck.add(10);
-				deck.add(10);
-				deck.add(10);
-				deck.add(11);
-			}
-		}
-		return deck;
 	}
 
 	private int sumHand(List<Integer> hand) {
